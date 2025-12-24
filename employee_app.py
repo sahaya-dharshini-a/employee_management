@@ -115,6 +115,19 @@ Button(root, text="Search by Salary", command=filter_by_salary).grid(row=13, col
             clear_fields()
         else:
             messagebox.showerror("Error","Department not found")
+    def show_employee_projects():
+        selected = listbox.curselection()
+    if selected:
+        emp_id = listbox.get(selected)[0]
+        cursor.execute("""
+            SELECT p.ProjectName FROM Projects p
+            JOIN EmployeeProject ep ON p.ProjectID=ep.ProjectID
+            WHERE ep.EmpID=%s
+        """, (emp_id,))
+        rows = cursor.fetchall()
+        projects = ", ".join([r[0] for r in rows]) if rows else "No Projects"
+        messagebox.showinfo("Assigned Projects", projects)
+    Button(root, text="View Projects", command=show_employee_projects).grid(row=16, column=1)
 
     def fetch_data():
         cursor.execute("""SELECT e.EmpID,e.Name,e.Email,e.Age,d.DepartmentName,e.Salary
