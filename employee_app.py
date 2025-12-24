@@ -104,6 +104,9 @@ Button(root, text="Search by Salary", command=filter_by_salary).grid(row=13, col
         if not re.match(r"[^@]+@[^@]+\.[^@]+",email):
             messagebox.showerror("Error","Invalid Email")
             return
+        if salary < 10000:
+            print("Salary must be above 10,000")
+        return
 
         cursor.execute("SELECT DepartmentID FROM Department WHERE DepartmentName=%s",(dept,))
         d=cursor.fetchone()
