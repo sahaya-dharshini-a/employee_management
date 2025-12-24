@@ -46,6 +46,32 @@ def login_page():
     login_window.mainloop()
 
 def employee_management():
+    def filter_by_salary():
+        min_sal = entry_min_salary.get()
+    max_sal = entry_max_salary.get()
+
+    query = """
+        SELECT e.EmpID, e.Name, e.Email, e.Age, d.DepartmentName, e.Salary
+        FROM Emp e JOIN Department d ON e.DepartmentID=d.DepartmentID
+        WHERE e.Salary BETWEEN %s AND %s
+    """
+    cursor.execute(query, (min_sal, max_sal))
+    rows = cursor.fetchall()
+    listbox.delete(0, END)
+    for row in rows:
+        listbox.insert(END, row)
+
+    Label(root, text="Min Salary").grid(row=11, column=0)
+entry_min_salary = Entry(root)
+entry_min_salary.grid(row=11, column=1)
+
+Label(root, text="Max Salary").grid(row=12, column=0)
+entry_max_salary = Entry(root)
+entry_max_salary.grid(row=12, column=1)
+
+Button(root, text="Search by Salary", command=filter_by_salary).grid(row=13, column=0, columnspan=2)
+
+    
     def clear_fields():
         entry_name.delete(0,END)
         entry_email.delete(0,END)
