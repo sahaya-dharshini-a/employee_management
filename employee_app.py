@@ -96,6 +96,15 @@ Button(root, text="Search by Salary", command=filter_by_salary).grid(row=13, col
         entry_age.delete(0,END)
         entry_salary.delete(0,END)
         combo_dept.set('')
+        
+    def search_employee():
+        name = input("Enter employee name: ")
+
+    cursor.execute("SELECT * FROM employee WHERE name LIKE %s", ('%' + name + '%',))
+    rows = cursor.fetchall()
+
+    for row in rows:
+        print(row)
 
     def add_employee():
         name,email,age,salary = entry_name.get(),entry_email.get(),entry_age.get(),entry_salary.get()
