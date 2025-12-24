@@ -52,6 +52,18 @@ def login_page():
     login_window.mainloop()
 
 def employee_management():
+    def highlight_high_salary():
+        cursor.execute("""
+        SELECT e.EmpID, e.Name, e.Email, e.Age, d.DepartmentName, e.Salary
+        FROM Emp e JOIN Department d ON e.DepartmentID=d.DepartmentID
+        WHERE e.Salary > 50000
+    """)
+    rows = cursor.fetchall()
+    listbox.delete(0, END)
+    for row in rows:
+        listbox.insert(END, row)
+    Button(root, text="High Salary > 50k", command=highlight_high_salary).grid(row=16, column=0)
+
     def filter_by_salary():
         min_sal = entry_min_salary.get()
     max_sal = entry_max_salary.get()
