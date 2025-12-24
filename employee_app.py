@@ -1,0 +1,117 @@
+import mysql.connector
+from tkinter import *
+from tkinter import messagebox, ttk
+import csv
+import re
+
+conn = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="1234",
+    database="dc"
+)
+cursor = conn.cursor()
+
+def login():
+    username = entry_username.get()
+    password = entry_password.get()
+
+    cursor.execute("SELECT * FROM Users WHERE username=%s AND password=%s",(username,password))
+    if cursor.fetchone():
+        messagebox.showinfo("Success","Login Successful")
+        login_window.destroy()
+        employee_management()
+    else:
+        messagebox.showerror("Error","Invalid Credentials")
+
+def toggle_password():
+    entry_password.config(show='' if entry_password.cget('show')=='*' else '*')
+
+def login_page():
+    global login_window, entry_username, entry_password
+    login_window = Tk()
+    login_window.title("Login")
+
+    Label(login_window,text="Username").grid(row=0,column=0)
+    Label(login_window,text="Password").grid(row=1,column=0)
+
+    entry_username = Entry(login_window)
+    entry_password = Entry(login_window,show="*")
+
+    entry_username.grid(row=0,column=1)
+    entry_password.grid(row=1,column=1)
+
+    Button(login_window,text="Login",command=login).grid(row=2,column=0,columnspan=2)
+    Button(login_window,text="Show / Hide Password",command=toggle_password).grid(row=3,column=0,columnspan=2)
+    login_window.mainloop()
+
+def employee_management():
+    def clear_fields():
+        entry_name.delete(0,END)
+        entry_email.delete(0,END)
+        entry_age.delete(0,END)
+        entry_salary.delete(0,END)
+        combo_dept.set('')
+
+    def add_employee():
+        name,email,age,salary = entry_name.get(),entry_email.get(),entry_age.get(),entry_salary.get()
+        dept = combo_dept.get()
+
+        if not re.match(r"[^@]+@[^@]+\.[^@]+",email):
+            messagebox.showerror("Error","Invalid Email")
+            return
+
+        cursor.execute("SELECT DepartmentID FROM Department WHERE DepartmentName=%s",(dept,))
+        d=cursor.fetchone()
+        if d:
+            cursor.execute("INSERT INTO Emp(Name,Email,Age,DepartmentID,Salary) VALUES(%s,%s,%s,%s,%s)",
+            (name,email,age,d[0],salary))
+            conn.commit()
+            fetch_data()
+            clear_fields()
+        else:
+            messagebox.showerror("Error","Department not found")
+
+    def fetch_data():
+        cursor.execute("""SELECT e.EmpID,e.Name,e.Email,e.Age,d.DepartmentName,e.Salary
+                          FROM Emp e JOIN Department d ON e.DepartmentID=d.DepartmentID""")
+        listbox.delete(0,END)
+        for r in cursor.fetchall():
+            listbox.insert(END,r)
+
+    def export_csv():
+        cursor.execute("SELECT Name,Email,Age,Salary FROM Emp")
+        with open("employees.csv","w",newline="") as f:
+            csv.writer(f).writerows(cursor.fetchall())
+        messagebox.showinfo("Success","Exported to employees.csv")
+
+    root=Tk()
+    root.title("Employee Management")
+
+    Label(root,text="Name").grid(row=0,column=0)
+    entry_name=Entry(root); entry_name.grid(row=0,column=1)
+
+    Label(root,text="Email").grid(row=1,column=0)
+    entry_email=Entry(root); entry_email.grid(row=1,column=1)
+
+    Label(root,text="Age").grid(row=2,column=0)
+    entry_age=Entry(root); entry_age.grid(row=2,column=1)
+
+    Label(root,text="Department").grid(row=3,column=0)
+    combo_dept=ttk.Combobox(root,state="readonly"); combo_dept.grid(row=3,column=1)
+    cursor.execute("SELECT DepartmentName FROM Department")
+    combo_dept['values']=[r[0] for r in cursor.fetchall()]
+
+    Label(root,text="Salary").grid(row=4,column=0)
+    entry_salary=Entry(root); entry_salary.grid(row=4,column=1)
+
+    Button(root,text="Add",command=add_employee).grid(row=5,column=0)
+    Button(root,text="Export CSV",command=export_csv).grid(row=5,column=1)
+
+    listbox=Listbox(root,width=70)
+    listbox.grid(row=6,column=0,columnspan=2)
+
+    fetch_data()
+    root.mainloop()
+
+login_page()
