@@ -29,6 +29,10 @@ def login():
         employee_management()
     else:
         messagebox.showerror("Error","Invalid Credentials")
+def employee_count():
+    cursor.execute("SELECT COUNT(*) FROM employee")
+    total = cursor.fetchone()
+    print("Total Employees:", total[0])
 
 def toggle_password():
     entry_password.config(show='' if entry_password.cget('show')=='*' else '*')
@@ -96,7 +100,7 @@ Button(root, text="Search by Salary", command=filter_by_salary).grid(row=13, col
         entry_age.delete(0,END)
         entry_salary.delete(0,END)
         combo_dept.set('')
-        
+
     def search_employee():
         name = input("Enter employee name: ")
 
