@@ -12,6 +12,12 @@ conn = mysql.connector.connect(
 )
 cursor = conn.cursor()
 
+def show_total_employees():
+    cursor.execute("SELECT COUNT(*) FROM Emp")
+    total = cursor.fetchone()[0]
+    messagebox.showinfo("Employee Count", f"Total Employees: {total}")
+Button(root, text="Total Employees", command=show_total_employees).grid(row=13, column=2)
+
 def login():
     username = entry_username.get()
     password = entry_password.get()
